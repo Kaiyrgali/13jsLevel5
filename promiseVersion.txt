@@ -1,1 +1,4 @@
 file for test promiseVersion branch in Git
+add new line in main branch for conflict
+dflds;lgmds;
+d;lgm;ldsmg
