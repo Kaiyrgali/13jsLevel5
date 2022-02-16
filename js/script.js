@@ -1,47 +1,41 @@
 "use strict"
-let hrefIcon='';
-// const hrefIcon = ['../img/markRed.svg', '../img/markBlue.svg', '../img/markGreen.svg'];
+
 const bottons = document.querySelector('#bottons');
-
-const btnClick = bottons.addEventListener('click', (e)=>choiseMethod(e.target));
-
-function choiseMethod (choise) {
-  switch (choise.id) {
-    case 'btnFetch':
-      console.log('CLICK');
-      let hrefIcon = '../img/markRed.svg';
-      return hrefIcon;
-    default: break
-    }
   
-  // console.log(choise.id);
-}
 ymaps.ready(function () { 
- 
-    var myMap = new ymaps.Map("YMapsID", {
-        center: [40.71, -74],
-        zoom: 11,
-    });
- 
-    // создание маркера
-    /// Эту часть надо убирать в функцию отдельную
-    
-    var myPlacemark = new ymaps.Placemark([40.71, -74], {
-       hintContent: 'название маркера',
-       balloonContent: 'html-контент',
-    },
-    {
-        iconLayout: 'default#image',
-        iconImageHref: hrefIcon,
-        iconImageSize: [40, 40],
-        iconImageOffset: [0, 0]
-    });
-
-    // добавление маркера на карту
-
-    myMap.geoObjects.add(myPlacemark);
-    
+  // let hrefIcon = '';
+  var myMap = new ymaps.Map("YMapsID", {
+    center: [40.71, -74],
+    zoom: 11,
 });
+
+  bottons.addEventListener('click', (e)=>choiseMethod(e.target));
+  let choiseMethod = (choise) => {
+      let hrefIcon = '';
+      console.log(choise.id);
+      // let hrefIcon = (choise.id=='btnFetch')?'../img/markRed.svg':'';
+      if (choise.id=='btnXML') {
+        hrefIcon = '../img/markRed.svg';
+      } else if (choise.id=='btnFetch') {
+        hrefIcon = '../img/markGreen.svg';
+      } else if (choise.id=='btnPromise') {
+        hrefIcon = '../img/markBlue.svg';
+      } else return
+    
+      var myPlacemark = new ymaps.Placemark([40.71, -74], {
+        hintContent: 'название маркера',
+        balloonContent: 'html-контент',
+      },
+      {
+       iconLayout: 'default#image',
+       iconImageHref: hrefIcon,
+       iconImageSize: [40, 40],
+       iconImageOffset: [0, 0]
+      });
+      myMap.geoObjects.add(myPlacemark); 
+     };
+      });
+
 
 
 async function getResponse () {
