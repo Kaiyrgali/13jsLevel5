@@ -1,6 +1,35 @@
 "use strict"
 
 const bottons = document.querySelector('#bottons');
+async function getResponse () {
+  let myResponse = await fetch ('https://gbfs.citibikenyc.com/gbfs/en/station_information.json');
+  // console.log(myResponse);
+    if (myResponse.statusText == 'OK') {
+      let dataBase = await myResponse.json();
+      // console.log(dataBase);
+      console.log(Date(dataBase.last_updated)); /// добавить вывод обновления и общего количества станций
+      
+      let stations = dataBase.data.stations;
+      // console.log(stations);
+      function rrr (arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      };
+     let activStations = [];
+     for (let i = 0; i < 5; i++) {
+       activStations.push(rrr(stations));
+     } 
+     console.log(activStations);
+    return activStations;    
+    //  return activStations;
+    //  
+      // let stations = dataBase.data.stations;
+  //     for (const key in stations) {
+  //     console.log(stations[key]);} 
+  //   } else {
+  //     alert("Ошибка HTTP: " + myResponse.status);
+  //     }
+  };
+};
   
 ymaps.ready(function () { 
   // let hrefIcon = '';
@@ -16,12 +45,17 @@ ymaps.ready(function () {
       // let hrefIcon = (choise.id=='btnFetch')?'../img/markRed.svg':'';
       if (choise.id=='btnXML') {
         hrefIcon = '../img/markRed.svg';
+        
       } else if (choise.id=='btnFetch') {
         hrefIcon = '../img/markGreen.svg';
+        // getResponse();
+        let massive = getResponse().then ();
+        // console.log(massive);        
       } else if (choise.id=='btnPromise') {
         hrefIcon = '../img/markBlue.svg';
       } else return
     
+      
       var myPlacemark = new ymaps.Placemark([40.71, -74], {
         hintContent: 'название маркера',
         balloonContent: 'html-контент',
@@ -38,23 +72,8 @@ ymaps.ready(function () {
 
 
 
-async function getResponse () {
-  let myResponse = await fetch ('https://gbfs.citibikenyc.com/gbfs/en/station_information.json');
-  console.log(myResponse);
-    if (myResponse.statusText == 'OK') { // если HTTP-статус в диапазоне 200-299
-    // получаем тело ответа (см. про этот метод ниже)
-    let user = await myResponse.json();
-    console.log(user);
-    console.log(Date(user.last_updated));
 
-    let stations = user.data.stations.splice (0, 2);
-    for (const key in stations) {
-    console.log(stations[key]);} 
-  } else {
-    alert("Ошибка HTTP: " + myResponse.status);
-    }
-  }
-getResponse ();
+// getResponse ();
 
 // 1. Создаём новый XMLHttpRequest-объект
 // let xhr = new XMLHttpRequest();
@@ -90,4 +109,3 @@ getResponse ();
 
 console.time();
 console.timeEnd();
-
