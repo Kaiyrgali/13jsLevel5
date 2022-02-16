@@ -3,3 +3,5 @@
 2) fetch
 3) XMLHttpRequest+promises chain (цепочка промисов через then)
 4) async/await
+
+Git изучить глубже
