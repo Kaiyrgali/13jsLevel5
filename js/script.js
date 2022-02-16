@@ -1,36 +1,11 @@
 "use strict"
 
 const bottons = document.querySelector('#bottons');
-async function getResponse () {
-  let myResponse = await fetch ('https://gbfs.citibikenyc.com/gbfs/en/station_information.json');
-  // console.log(myResponse);
-    if (myResponse.statusText == 'OK') {
-      let dataBase = await myResponse.json();
-      // console.log(dataBase);
-      console.log(Date(dataBase.last_updated)); /// добавить вывод обновления и общего количества станций
-      
-      let stations = dataBase.data.stations;
-      // console.log(stations);
-      function rrr (arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-      };
-     let activStations = [];
-     for (let i = 0; i < 5; i++) {
-       activStations.push(rrr(stations));
-     } 
-     console.log(activStations);
-    return activStations;    
-    //  return activStations;
-    //  
-      // let stations = dataBase.data.stations;
-  //     for (const key in stations) {
-  //     console.log(stations[key]);} 
-  //   } else {
-  //     alert("Ошибка HTTP: " + myResponse.status);
-  //     }
-  };
-};
-  
+let hrefIcon = '';
+const url = new URL ('https://gbfs.citibikenyc.com/gbfs/en/station_information.json');
+const numLabels = 10;
+
+
 ymaps.ready(function () { 
   // let hrefIcon = '';
   var myMap = new ymaps.Map("YMapsID", {
@@ -40,37 +15,92 @@ ymaps.ready(function () {
 
   bottons.addEventListener('click', (e)=>choiseMethod(e.target));
   let choiseMethod = (choise) => {
-      let hrefIcon = '';
-      console.log(choise.id);
+      // let hrefIcon = '';
+      // console.log(choise.id);
       // let hrefIcon = (choise.id=='btnFetch')?'../img/markRed.svg':'';
       if (choise.id=='btnXML') {
         hrefIcon = '../img/markRed.svg';
         
       } else if (choise.id=='btnFetch') {
         hrefIcon = '../img/markGreen.svg';
-        // getResponse();
-        let massive = getResponse().then ();
-        // console.log(massive);        
+        async function getResponse () {
+          let myResponse = await fetch (url);
+          console.log(myResponse);
+            if (myResponse.statusText == 'OK') {
+              let dataBase = await myResponse.json();
+              // console.log(dataBase);
+              console.log(Date(dataBase.last_updated)); /// добавить вывод обновления и общего количества станций
+              
+              let stations = dataBase.data.stations;
+              // console.log(stations);
+              function rrr (arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+              };
+             let activStations = [];
+             for (let i = 0; i < numLabels; i++) {
+               activStations.push(rrr(stations));
+             } 
+             console.log(activStations[0]);
+             let i=0;
+             let timerId = setInterval(() => {
+              var myPlacemark = new ymaps.Placemark([activStations[i].lat, activStations[i].lon], {
+                hintContent: `Станция номер - ${activStations[i].legacy_id} `,
+                balloonContent: `Название станции - ${activStations[i].name}`,
+              },
+              {
+               iconLayout: 'default#image',
+               iconImageHref: hrefIcon,
+               iconImageSize: [40, 40],
+               iconImageOffset: [0, 0]
+              });
+              
+              myMap.geoObjects.add(myPlacemark);
+              i++;
+             }, 1000);
+             setTimeout(() => clearInterval(timerId), numLabels*1000);
+             console.log('Finish');
+            //  for (let i = 0; i < 5; i++) {
+              
+              
+            // }
+            return activStations[0];    
+            //  return activStations;
+            //  
+              // let stations = dataBase.data.stations;
+          //     for (const key in stations) {
+          //     console.log(stations[key]);} 
+          //   } else {
+          //     alert("Ошибка HTTP: " + myResponse.status);
+          //     }
+          };
+          
+        };
+           getResponse();     
+        // for (let i = 0; i < 5; i++) {
+        //   var myPlacemark = new ymaps.Placemark([40.71, -74], {
+        //     hintContent: `Станция номер - `,
+        //     balloonContent: 'html-контент',
+        //   },
+        //   {
+        //    iconLayout: 'default#image',
+        //    iconImageHref: hrefIcon,
+        //    iconImageSize: [40, 40],
+        //    iconImageOffset: [0, 0]
+        //   });
+        //   myMap.geoObjects.add(myPlacemark); 
+          
+        // }
+                
       } else if (choise.id=='btnPromise') {
         hrefIcon = '../img/markBlue.svg';
       } else return
     
       
-      var myPlacemark = new ymaps.Placemark([40.71, -74], {
-        hintContent: 'название маркера',
-        balloonContent: 'html-контент',
-      },
-      {
-       iconLayout: 'default#image',
-       iconImageHref: hrefIcon,
-       iconImageSize: [40, 40],
-       iconImageOffset: [0, 0]
-      });
-      myMap.geoObjects.add(myPlacemark); 
+      
      };
       });
 
-
+      
 
 
 // getResponse ();
