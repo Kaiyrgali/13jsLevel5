@@ -1,0 +1,23 @@
+* {
+margin: 0;
+padding: 0;
+font-size: 14px;
+}
+.first-line {
+    display: flex;
+    /* margin-right: 10px; */
+}
+#btnError, p {
+    margin-left: 4px;
+}
+span {
+    font-size: 16px;
+    font-weight: 600;
+    color: blueviolet;
+}
+.btn-active {
+    background-color: pink;
+}
+.error-active {
+    background-color: red;
+}

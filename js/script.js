@@ -1,9 +1,14 @@
 "use strict"
 
-const bottons = document.querySelector('#bottons');
+const buttons = document.querySelector('#buttons');
+const errorBtn = document.querySelector('#btnError');
+const spanStatus = document.querySelector('#statusId');
 let hrefIcon = '';
-const url = new URL ('https://gbfs.citibikenyc.com/gbfs/en/station_information.json');
+let url = 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';
 const numLabels = 10;
+let activStations = [];
+let i = 0;
+
 
 function getRandom (arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -14,8 +19,13 @@ ymaps.ready(function () {
     center: [40.71, -74],
     zoom: 10,
 });
+  newStatus ('карта загружена');
+  errorBtn.addEventListener('click', errorActiv);
 
-  bottons.addEventListener('click', (e)=>choiseMethod(e.target));
+  buttons.addEventListener('click', (e)=>{
+    changeBtnStyle (e.target);
+    choiseMethod(e.target)});
+  
   let choiseMethod = (choise) => {
       if (choise.id=='btnXML') {
         hrefIcon = '../img/markRed.svg';
@@ -25,10 +35,9 @@ ymaps.ready(function () {
         xhr.send();
         xhr.onload = function() {
           if (xhr.status != 200) {
-            alert(`Ошибка ${xhr.status}: ${xhr.statusText}`); // Заменить на собственный обработчик ошибок
+            newStatus ('Возникла ошибка. Попробуйте позже ...');
           } else {
             let stations = xhr.response.data.stations;
-            let activStations = [];
             for (let i = 0; i < numLabels; i++) {
               activStations.push(getRandom(stations));
             } 
@@ -46,6 +55,7 @@ ymaps.ready(function () {
              });
              
              myMap.geoObjects.add(myPlacemark);
+             newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
              i++;
             }, 1000);
             setTimeout(() => clearInterval(timerId), numLabels*1000);
@@ -64,7 +74,6 @@ ymaps.ready(function () {
             if (myResponse.statusText == 'OK') {
               let dataBase = await myResponse.json();
               let stations = dataBase.data.stations;
-              let activStations = [];
               for (let i = 0; i < numLabels; i++) {
                 activStations.push(getRandom(stations));
                 };
@@ -80,13 +89,14 @@ ymaps.ready(function () {
                iconImageSize: [40, 40],
                iconImageOffset: [0, 0]
               });
-              
               myMap.geoObjects.add(myPlacemark);
+              newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
               i++;
              }, 1000);
+             
              setTimeout(() => clearInterval(timerId), numLabels*1000);
             return activStations[0];    
-          };          
+          } else newStatus ('Возникла ошибка. Попробуйте позже ...');          
         };
           getResponse();    
       } else if (choise.id=='btnPromise') {
@@ -112,23 +122,46 @@ ymaps.ready(function () {
               iconImageOffset: [0, 0]
              });
              myMap.geoObjects.add(myPlacemark);
-            setTimeout(()=> resolve(), 1000)}
+             newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
+             i++;
+            setTimeout(()=> resolve(i), 1000)}
           })
                
         }
         loadStaitions ()
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
-          .then (() => {return loadStaitions ()})
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .then (() => loadStaitions ())
+          .catch (newStatus ('Возникла ошибка. Попробуйте позже ...'))
 
           // catch (alert ('Mistake!');
       } else return };
-
     });
+  
 
+function changeBtnStyle (choise) {
+  for (let i = 0; i < buttons.children.length; i++) {
+    buttons.children[i].classList.remove("btn-active");   
+  }
+  choise.classList.add("btn-active");
+};
+
+function errorActiv () {
+  errorBtn.classList.toggle('error-active');
+  if (errorBtn.classList == 'error-active') {
+    newStatus ('сгенерирована ошибка');
+    return url='mlml';
+  } else return url= 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';;
+};
+
+function newStatus (comment) {
+  spanStatus.innerText = comment;
+  // setInterval(()={spanStatus.innerText = comment}, 1000); 
+}
+//https://www.pandoge.com/stati-i-sovety/podrobnaya-instrukciya-po-dobavleniyu-yandekskarty-na-svoy-sayt 
