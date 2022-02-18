@@ -5,14 +5,35 @@ const errorBtn = document.querySelector('#btnError');
 const spanStatus = document.querySelector('#statusId');
 let hrefIcon = '';
 let url = 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';
-const numLabels = 10;
+let maxStations = 10;
 let activStations = [];
-let i = 0;
-
+let counter = 0;
 
 function getRandom (arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 };
+
+function changeBtnStyle (choise) {
+  for (let i = 0; i < buttons.children.length; i++) {
+    buttons.children[i].classList.remove("btn-active");   
+  }
+  choise.classList.add("btn-active");
+};
+
+function errorActiv () {
+  errorBtn.classList.toggle('error-active');
+  if (errorBtn.classList == 'error-active') {
+    newStatus ('сгенерирована ошибка');
+    return url='some wrong url';
+  } else {
+    newStatus ('ошибки не должно быть');
+    return url= 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';
+  }
+};
+
+function newStatus (comment) {
+  spanStatus.innerText = comment;
+}
 
 ymaps.ready(function () { 
   var myMap = new ymaps.Map("YMapsID", {
@@ -21,8 +42,9 @@ ymaps.ready(function () {
 });
   newStatus ('карта загружена');
   errorBtn.addEventListener('click', errorActiv);
-
   buttons.addEventListener('click', (e)=>{
+    myMap.geoObjects.removeAll();
+    counter = 0;
     changeBtnStyle (e.target);
     choiseMethod(e.target)});
   
@@ -38,14 +60,13 @@ ymaps.ready(function () {
             newStatus ('Возникла ошибка. Попробуйте позже ...');
           } else {
             let stations = xhr.response.data.stations;
-            for (let i = 0; i < numLabels; i++) {
+            for (let i = 0; i < maxStations; i++) {
               activStations.push(getRandom(stations));
-            } 
-            let i=0;
+            }
             let timerId = setInterval(() => {
-             var myPlacemark = new ymaps.Placemark([activStations[i].lat, activStations[i].lon], {
-               hintContent: `Станция номер - ${activStations[i].legacy_id} `,
-               balloonContent: `Название станции - ${activStations[i].name}`,
+             var myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
+               hintContent: `Станция номер - ${activStations[counter].legacy_id} `,
+               balloonContent: `Название станции - ${activStations[counter].name}`,
              },
              {
               iconLayout: 'default#image',
@@ -55,16 +76,14 @@ ymaps.ready(function () {
              });
              
              myMap.geoObjects.add(myPlacemark);
-             newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
-             i++;
+             newStatus (`Показано ${(counter+1)} станций из ${stations.length}`);
+             counter++;
             }, 1000);
-            setTimeout(() => clearInterval(timerId), numLabels*1000);
-            // Если рандомизация и Обработка карты повторяется. Поэтому можно вывести ее в отдельную функцию и попробовать импортировать
+            setTimeout(() => clearInterval(timerId), maxStations*1000);
             }
           };
-         
-        xhr.onerror = function() { // Заменить на свой обработчик ошибок
-          alert("Запрос не удался");
+        xhr.onerror = function() {
+          newStatus("Запрос не удался");
         };
 
       } else if (choise.id=='btnFetch') {
@@ -74,14 +93,13 @@ ymaps.ready(function () {
             if (myResponse.statusText == 'OK') {
               let dataBase = await myResponse.json();
               let stations = dataBase.data.stations;
-              for (let i = 0; i < numLabels; i++) {
+              for (let i = 0; i < maxStations; i++) {
                 activStations.push(getRandom(stations));
                 };
-             let i=0;
              let timerId = setInterval(() => {
-              var myPlacemark = new ymaps.Placemark([activStations[i].lat, activStations[i].lon], {
-                hintContent: `Станция номер - ${activStations[i].legacy_id} `,
-                balloonContent: `Название станции - ${activStations[i].name}`,
+              var myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
+                hintContent: `Станция номер - ${activStations[counter].legacy_id} `,
+                balloonContent: `Название станции - ${activStations[counter].name}`,
               },
               {
                iconLayout: 'default#image',
@@ -90,12 +108,10 @@ ymaps.ready(function () {
                iconImageOffset: [0, 0]
               });
               myMap.geoObjects.add(myPlacemark);
-              newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
-              i++;
+              newStatus (`Показано ${(counter+1)} станций из ${stations.length}`);
+              counter++;
              }, 1000);
-             
-             setTimeout(() => clearInterval(timerId), numLabels*1000);
-            return activStations[0];    
+             setTimeout(() => clearInterval(timerId), maxStations*1000);    
           } else newStatus ('Возникла ошибка. Попробуйте позже ...');          
         };
           getResponse();    
@@ -106,12 +122,11 @@ ymaps.ready(function () {
             let xhr = new XMLHttpRequest();
             xhr.open('GET', url);
             xhr.responseType = 'json';
-            console.log(xhr);
             xhr.send();
             xhr.onload = function() {
             let stations = xhr.response.data.stations;
-            let activStations = getRandom(stations); //сократил, так как массив не нужен
-            var myPlacemark = new ymaps.Placemark([activStations.lat, activStations.lon], { //немного отличается, то что не массив
+            let activStations = getRandom(stations);//немного отличается, то что не массив
+            var myPlacemark = new ymaps.Placemark([activStations.lat, activStations.lon], { 
                hintContent: `Станция номер - ${activStations.legacy_id} `,
                balloonContent: `Название станции - ${activStations.name}`,
              },
@@ -122,9 +137,9 @@ ymaps.ready(function () {
               iconImageOffset: [0, 0]
              });
              myMap.geoObjects.add(myPlacemark);
-             newStatus (`Показано ${(i+1)} станций из ${stations.length}`);
-             i++;
-            setTimeout(()=> resolve(i), 1000)}
+             newStatus (`Показано ${(counter+1)} станций из ${stations.length}`);
+             counter++;
+            setTimeout(()=> resolve(), 1000)}
           })
                
         }
@@ -139,29 +154,5 @@ ymaps.ready(function () {
           .then (() => loadStaitions ())
           .then (() => loadStaitions ())
           .catch (newStatus ('Возникла ошибка. Попробуйте позже ...'))
-
-          // catch (alert ('Mistake!');
       } else return };
     });
-  
-
-function changeBtnStyle (choise) {
-  for (let i = 0; i < buttons.children.length; i++) {
-    buttons.children[i].classList.remove("btn-active");   
-  }
-  choise.classList.add("btn-active");
-};
-
-function errorActiv () {
-  errorBtn.classList.toggle('error-active');
-  if (errorBtn.classList == 'error-active') {
-    newStatus ('сгенерирована ошибка');
-    return url='mlml';
-  } else return url= 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';;
-};
-
-function newStatus (comment) {
-  spanStatus.innerText = comment;
-  // setInterval(()={spanStatus.innerText = comment}, 1000); 
-}
-//https://www.pandoge.com/stati-i-sovety/podrobnaya-instrukciya-po-dobavleniyu-yandekskarty-na-svoy-sayt 
