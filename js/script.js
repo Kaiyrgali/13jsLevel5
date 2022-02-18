@@ -35,11 +35,13 @@ function newStatus (comment) {
   spanStatus.innerText = comment;
 }
 
+try {
 ymaps.ready(function () { 
+
   var myMap = new ymaps.Map("YMapsID", {
-    center: [40.71, -74],
-    zoom: 10,
-});
+  center: [40.71, -74],
+  zoom: 10,});
+
   newStatus ('карта загружена');
   errorBtn.addEventListener('click', errorActiv);
   buttons.addEventListener('click', (e)=>{
@@ -156,3 +158,6 @@ ymaps.ready(function () {
           .catch (newStatus ('Возникла ошибка. Попробуйте позже ...'))
       } else return };
     });
+} catch {
+    newStatus ('Карта не загрузилась. Проверьте соединение с интернетом ...');
+};
