@@ -6,11 +6,11 @@ const spanStatus = document.querySelector('#statusId');
 let hrefIcon = '';
 let url = 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json';
 let maxStations = 10;
-let activStations = [];
+const activStations = [];
 let counter = 0;
 
 function getRandom (arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(Math.random() * arr.length)]
 };
 
 function changeBtnStyle (choise) {
@@ -35,16 +35,37 @@ function newStatus (comment) {
   spanStatus.innerText = comment;
 }
 
-try {
-ymaps.ready(function () { 
+const myMap = () => {new ymaps.Map("YMapsID", {
+    center: [40.71, -74],
+    zoom: 10,
+  });
+  newStatus('карта загружена');}
 
-  var myMap = new ymaps.Map("YMapsID", {
-  center: [40.71, -74],
-  zoom: 10,});
 
-  newStatus ('карта загружена');
-  errorBtn.addEventListener('click', errorActiv);
-  buttons.addEventListener('click', (e)=>{
+ymaps.ready(myMap, newStatus ('Карта не загрузилась. Проверьте соединение с интернетом ...')); // Либо тут колбеки и зис
+
+
+console.dir (ymaps);
+console.log (myMap);
+
+
+let myPlacemark = (counter) => {
+  new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
+  hintContent: `Станция номер - ${activStations[counter].legacy_id} `,
+  balloonContent: `Название станции - ${activStations[counter].name}`,
+},{
+  iconLayout: 'default#image',
+  iconContent: 'islands#blueBicycleIcon',
+  iconImageSize: [40, 40],
+  iconImageOffset: [0, 0]
+});
+
+myMap.geoObjects.add(myPlacemark);
+}
+
+/*
+errorBtn.addEventListener('click', errorActiv);
+buttons.addEventListener('click', (e)=>{
     myMap.geoObjects.removeAll();
     counter = 0;
     changeBtnStyle (e.target);
@@ -52,7 +73,6 @@ ymaps.ready(function () {
   
   let choiseMethod = (choise) => {
       if (choise.id=='btnXML') {
-        hrefIcon = '../img/markRed.svg';
         let xhr = new XMLHttpRequest();
         xhr.open('GET', url);
         xhr.responseType = 'json';
@@ -66,7 +86,7 @@ ymaps.ready(function () {
               activStations.push(getRandom(stations));
             }
             let timerId = setInterval(() => {
-             var myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
+             const myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
                hintContent: `Станция номер - ${activStations[counter].legacy_id} `,
                balloonContent: `Название станции - ${activStations[counter].name}`,
              },
@@ -99,7 +119,7 @@ ymaps.ready(function () {
                 activStations.push(getRandom(stations));
                 };
              let timerId = setInterval(() => {
-              var myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
+              const myPlacemark = new ymaps.Placemark([activStations[counter].lat, activStations[counter].lon], {
                 hintContent: `Станция номер - ${activStations[counter].legacy_id} `,
                 balloonContent: `Название станции - ${activStations[counter].name}`,
               },
@@ -128,7 +148,7 @@ ymaps.ready(function () {
             xhr.onload = function() {
             let stations = xhr.response.data.stations;
             let activStations = getRandom(stations);//немного отличается, то что не массив
-            var myPlacemark = new ymaps.Placemark([activStations.lat, activStations.lon], { 
+            const myPlacemark = new ymaps.Placemark([activStations.lat, activStations.lon], { 
                hintContent: `Станция номер - ${activStations.legacy_id} `,
                balloonContent: `Название станции - ${activStations.name}`,
              },
@@ -157,7 +177,4 @@ ymaps.ready(function () {
           .then (() => loadStaitions ())
           .catch (newStatus ('Возникла ошибка. Попробуйте позже ...'))
       } else return };
-    });
-} catch {
-    newStatus ('Карта не загрузилась. Проверьте соединение с интернетом ...');
-};
+      */
