@@ -1,52 +1,65 @@
 "use strict"
 
 let url = 'https://gbfs.citibikenyc.com/gbfs/en/station_information.json',
-    myMap = new Object(),
-    stations = new Array(),
-    activeBtn = new Object(),
-    activStations = new Array(),
-    iconMap = new String();
+  myMap = new Object(),
+  stations = new Array(),
+  activeBtn = new Object(),
+  activStations = new Array(),
+  iconMap = new String();
 
 const maxStations = 10,
-      buttons = document.querySelector('#buttons'),
-      errorBtn = document.querySelector('#btnError'),
-      spanStatus = document.querySelector('#statusId'),
-      activeBtnClass = "btn-active",
-      errorBtnClass = "error-active",
-      errorText = "Возникла ошибка. Попробуйте позже ...",
-      errorGenerateText = "Cгенерирована ошибка",
-      errorNotText = "Ошибки не должно быть",
-      errorRequestText= "Запрос не удался",
-      errorLoadMapText = "Карта не загрузилась. Проверьте соединение с интернетом ...",
-      LoadMapOk = "Карта загружена",
-      urlWrong = "some wrong url",
-      urlRight = url,
-      mapCenter = [40.71, -74],
-      mapZoom = 10;
+  buttons = document.querySelector('#buttons'),
+  errorBtn = document.querySelector('#btnError'),
+  spanStatus = document.querySelector('#statusId'),
+  activeBtnClass = "btn-active",
+  errorBtnClass = "error-active",
+  errorText = "Возникла ошибка. Попробуйте позже ...",
+  errorGenerateText = "Cгенерирована ошибка",
+  errorNotText = "Ошибки не должно быть",
+  errorRequestText= "Запрос не удался",
+  errorLoadMapText = "Карта не загрузилась. Проверьте соединение с интернетом ...",
+  LoadMapOk = "Карта загружена",
+  urlWrong = "some wrong url",
+  urlRight = url,
+  mapCenter = [40.71, -74],
+  mapZoom = 10,
+  IdMethodOne = "btnXML",
+  IdMethodTwo = "btnFetch",
+  IdMethodThree = "btnPromise";
+
+ymaps.ready(createMap, updateStatus(errorLoadMapText));
+
+errorBtn.addEventListener('click', changeErrorStyle);
+
+buttons.addEventListener('click', (e)=>{
+  activeBtn = e;
+  changeBtnStyle(activeBtn.target); // меняем цвета активной кнопки
+  choiseMethod(activeBtn.target) // скачиваем базу велосипедов одним из трех ассинхронных методов  
+});
 
 function getRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
-};
+}
 
 function changeBtnStyle(choise) {
   for (let i = 0; i < buttons.children.length; i++) {
     buttons.children[i].classList.remove(activeBtnClass);
   }
   choise.classList.add(activeBtnClass);
-};
+}
 
 function changeErrorStyle() {
   errorBtn.classList.toggle(errorBtnClass);
   if (errorBtn.classList == errorBtnClass) {
-    newStatus (errorGenerateText);
+    updateStatus(errorGenerateText);
     url = urlWrong;
   } else {
-    newStatus (errorNotText);
+    updateStatus(errorNotText);
     url = urlRight;
   }
-};
+}
 
-function newStatus(comment) {
+function updateStatus(comment) {
   spanStatus.innerText = comment;
 }
 
@@ -60,95 +73,87 @@ function makeStations() {
 function drawStations() {
   myMap.geoObjects.removeAll();
   for (let i = 0; i < activStations.length; i++) {
-    let myPlacemark = new ymaps.Placemark(
-    [activStations[i].lat, activStations[i].lon], {
-    hintContent: `Станция номер - ${activStations[i].legacy_id} `,
-    balloonContent: `Название станции - ${activStations[i].name}`,
+    setTimeout(() => {
+      let myPlacemark = new ymaps.Placemark(
+      [activStations[i].lat, activStations[i].lon], {
+      hintContent: `Станция номер - ${activStations[i].legacy_id} `,
+      balloonContent: `Название станции - ${activStations[i].name}`,
     }, {preset: iconMap});
-    myMap.geoObjects.add(myPlacemark);
-    newStatus (`Показано ${(i + 1)} станций из ${stations.length}`);
+      myMap.geoObjects.add(myPlacemark);
+      updateStatus(`Показано ${(i + 1)} станций из ${stations.length}`);
+    }, 500*i);
   }
 }
 
-ymaps.ready(newMap, newStatus (errorLoadMapText));
-
-function newMap() {
+function createMap() {
   myMap = new ymaps.Map("YMapsID", {center: mapCenter, zoom: mapZoom});
-  newStatus(LoadMapOk);
-};
-
-errorBtn.addEventListener('click', changeErrorStyle);
-
-buttons.addEventListener('click', (e)=>{
-  activeBtn = e;
-  changeBtnStyle (activeBtn.target); // меняем цвета активной кнопки
-  choiseMethod(activeBtn.target) // скачиваем базу велосипедов одним из трех ассинхронных методов  
-});
+  updateStatus(LoadMapOk);
+}
 
 function choiseMethod(choise) {
-  if (choise.id == 'btnXML') {
-    methodOne ();
-  } else if (choise.id == 'btnFetch') {
-    methodTwo ();
-  } else if (choise.id == 'btnPromise') {
-    methodThree ()
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .then (() => methodThree ())
-      .catch (newStatus (errorText))
+  if (choise.id === IdMethodOne) {
+    methodOne(url);
+  } else if (choise.id === IdMethodTwo) {
+    methodTwo(url);
+  } else if (choise.id === IdMethodThree) {
+    methodThree(url)
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .then (() => methodThree(url))
+      .catch (updateStatus(errorText))
   } else return
-};
+}
 
-function methodOne() {
+function methodOne(currentUrl) {
   const xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
+  xhr.open('GET', currentUrl);
   xhr.responseType = 'json';
   xhr.send();
   xhr.onload = function() {
     if (xhr.status != 200) {
-      newStatus (errorText);
+      updateStatus(errorText);
     } else {
       iconMap = 'islands#blueBicycleIcon';
       stations = xhr.response.data.stations;
-      makeStations () // Генерируем массив из 10ти (maxNumber) станций
-      drawStations (); // Рисуем на карте 10ть (maxNumber) станций        
+      makeStations() // Генерируем массив из 10ти (maxNumber) станций
+      drawStations(); // Рисуем на карте 10ть (maxNumber) станций        
     }
-  };
-  xhr.onerror = function() {
-    newStatus(errorRequestText);
   }
-}; 
+  xhr.onerror = function() {
+    updateStatus(errorRequestText);
+  }
+}
 
-async function methodTwo() {
-  const myResponse = await fetch (url);
-  if (myResponse.statusText == 'OK') {
+async function methodTwo(currentUrl) {
+  const myResponse = await fetch (currentUrl);
+  if (myResponse.statusText === 'OK') {
     const dataBase = await myResponse.json();
     iconMap = 'islands#redBicycleIcon';
     stations = dataBase.data.stations;
-    makeStations () // Генерируем массив из 10ти (maxNumber) станций
-    drawStations (); // Рисуем на карте 10ть (maxNumber) станций        
-  } else newStatus (errorText);          
-};
+    makeStations(); // Генерируем массив из 10ти (maxNumber) станций
+    drawStations(); // Рисуем на карте 10ть (maxNumber) станций        
+  } else updateStatus(errorText);          
+}
 
-function methodThree() {
-  return new Promise ((resolve) => {
+function methodThree(currentUrl) {
+  return new Promise (function(resolve) {
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
+    xhr.open('GET', currentUrl);
     xhr.responseType = 'json';
     xhr.send();
     xhr.onload = function() {
       iconMap = 'islands#greenBicycleIcon';
       stations = xhr.response.data.stations;
-      makeStations (); // Генерируем массив из 10ти (maxNumber) станций
-      drawStations (); // Рисуем на карте 10ть (maxNumber) станций     
+      makeStations(); // Генерируем массив из 10ти (maxNumber) станций
+      drawStations(); // Рисуем на карте 10ть (maxNumber) станций     
       console.log('methodThree');
-      resolve ();
+      resolve(); //иначе следующие then не срабатывают
     }
   })
 }
